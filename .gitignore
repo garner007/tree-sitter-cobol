@@ -37,3 +37,6 @@ dsl.d.ts
 
 test/cobol85/result/
 test/cobol85/summary.txt
+
+# Testing directory
+wangold_tree_sitter_cobol/

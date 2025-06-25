@@ -32,11 +32,10 @@ module.exports = grammar({
   ],
 
   rules: {
-    start: $ => repeat(
-      choice(
-        $.program_definition,
-        //optional($.function_definition) //todo
-      )
+    start: $ => choice(
+      $.program_definition,
+      $.copybook_definition
+      //optional($.function_definition) //todo
     ),
 
     _LINE_COMMENT_ALIAS: $ => alias($._LINE_COMMENT, $.comment),
@@ -1085,7 +1084,7 @@ module.exports = grammar({
 
     picture_a: $ => /([aA](\([0-9]+\))?)+/,
 
-    picture_edit: $ => /([aAxX9bBvVzZpPwW\(\)0-9$/,\.*+<>-]|[cC][rR]|[dD][bB])*([aAxX9bBvVzZpPwW\(\)0-9$/,*+<>-]|[cC][rR]|[dD][bB])/,
+    picture_edit: $ => /([aAxX9bBvVzZpPwW\(\)0-9$/,\.*+<>-]|[cC][rR]|[dD][bB])*([aAxX9bBvVzZpPwW\(\)0-9$/,*+<>-]|[cC][rR]|[dD][bB]|[tT][uU][rR][eE])/,
 
     usage_clause: $ => seq(
       optional(seq($._USAGE, optional($._IS))),
@@ -1332,7 +1331,7 @@ module.exports = grammar({
     )),
 
     _procedure_division_statement: $ => choice(
-      $._statement,
+      seq($._statement, optional('.')),
       $._start_handler,
       $._end_statement,
     ),
@@ -1376,27 +1375,46 @@ module.exports = grammar({
       $.delete_statement,
       $.display_statement,
       $.divide_statement,
+      $.exec_statement,
       $.exit_statement,
+      $.free_statement,
+      $.generate_statement,
       $.goback_statement,
       $.goto_statement,
+      $.if_statement,
+
+      $.ims_checkpoint_statement,
+      $.ims_restart_statement,
+      $.ims_rollback_statement,
+      $.ims_schedtask_statement,
+      $.ims_termtask_statement,
+      $.ims_get_message_statement,
+      $.ims_send_message_statement,
+      $.ims_purge_message_statement,
       $.initialize_statement,
       $.inspect_statement,
+      $.invoke_statement,
       $.merge_statement,
       $.move_statement,
       $.multiply_statement,
       $.open_statement,
       $.perform_statement_call_proc,
       $.read_statement,
+      $.receive_statement,
       $.release_statement,
       $.return_statement,
       $.rewrite_statement,
       $.search_statement,
+      $.send_statement,
       $.set_statement,
       $.sort_statement,
       $.start_statement,
       $.stop_statement,
       $.string_statement,
       $.subtract_statement,
+      $.suppress_statement,
+      $.terminate_statement,
+      $.transform_statement,
       $.unstring_statement,
       $.use_statement,
       $.write_statement,
@@ -1581,32 +1599,41 @@ module.exports = grammar({
       ))
     ),
 
-    add_statement: $ => seq(
+    add_statement: $ => prec.right(seq(
       $._ADD,
-      $._add_body,
-    ),
-
-    _add_body: $ => seq(
       choice(
         seq(
-          field('from', repeat1($._x)),
+          field('from', repeat1($._basic_value)),
           $._TO,
           field('to', repeat1($.arithmetic_x)),
         ),
         seq(
-          field('from', repeat1($._x)),
-          field('to', optional(seq($._TO, $._x))),
+          field('from', repeat1($._basic_value)),
           $._GIVING,
           field('giving', repeat1($.arithmetic_x)),
         ),
+        // Enhanced CORRESPONDING support
         seq(
-          $.CORRESPONDING,
+          $._CORRESPONDING,
           field('from', $._identifier),
           $._TO,
-          field('to', seq($._identifier, optional($.ROUNDED))),
+          field('to', $._identifier)
         )
       ),
-    ),
+      optional(prec.right(seq(
+        $._ON,
+        $._SIZE,
+        $._ERROR,
+        field('size_error', repeat($._statement))
+      ))),
+      optional(prec.right(seq(
+        $._NOT,
+        $._ON,
+        $._SIZE,
+        $._ERROR,
+        field('not_size_error', repeat($._statement))
+      ))),
+    )),
 
     _size_error_block: $ => nonempty(
       $.on_size_error,
@@ -2309,7 +2336,7 @@ module.exports = grammar({
 
     perform_procedure: $ => seq(
       $.label,
-      optional(seq($.THRU, $.label)),
+      optional(seq(choice($._THRU, $._THROUGH), $.label)),
     ),
 
     perform_option: $ => choice(
@@ -2715,6 +2742,135 @@ module.exports = grammar({
 
     next_sentence_statement: $ => seq($._NEXT, $._SENTENCE),
 
+    // IF statement with enhanced support
+    if_statement: $ => prec.right(seq(
+      $._IF,
+      field('condition', $.expr),
+      optional($._THEN),
+      field('then_statements', repeat($._statement)),
+      optional(prec.right(seq(
+        $._ELSE,
+        field('else_statements', repeat($._statement))
+      ))),
+      optional($._END_IF)
+    )),
+
+    // EXEC statement for embedded SQL/CICS/IMS
+    exec_statement: $ => seq(
+      $._EXEC,
+      field('type', choice($._SQL, $._CICS, $._DLI, $._SQLIMS)),
+      field('body', repeat(choice(
+        /[^\r\n]+/,
+        /\r?\n/
+      ))),
+      $._END_EXEC
+    ),
+
+    // Additional utility statements
+    free_statement: $ => seq(
+      $._FREE,
+      field('data_name', repeat1($._identifier))
+    ),
+
+    generate_statement: $ => seq(
+      $._GENERATE,
+      field('report_name', $._identifier)
+    ),
+
+    invoke_statement: $ => seq(
+      $._INVOKE,
+      field('object', $._identifier),
+      field('method', $._STRING),
+      optional(seq($._USING, field('parameters', repeat1($._identifier)))),
+      optional(seq($._RETURNING, field('return_value', $._identifier)))
+    ),
+
+    receive_statement: $ => seq(
+      $._RECEIVE,
+      field('data_name', $._identifier),
+      $._FROM,
+      field('source', $._identifier)
+    ),
+
+    send_statement: $ => seq(
+      $._SEND,
+      field('data_name', $._identifier),
+      optional(seq($._TO, field('destination', $._identifier)))
+    ),
+
+    suppress_statement: $ => seq(
+      $._SUPPRESS,
+      optional($._PRINTING)
+    ),
+
+    terminate_statement: $ => seq(
+      $._TERMINATE,
+      field('report_name', $._identifier)
+    ),
+
+    transform_statement: $ => seq(
+      $._TRANSFORM,
+      field('identifier', $._identifier),
+      $._CHARACTERS,
+      $._FROM,
+      field('from_chars', $._string),
+      $._TO,
+      field('to_chars', $._string)
+    ),
+
+
+
+    ims_checkpoint_statement: $ => seq(
+      $._CHECKPOINT,
+      field('checkpoint_id', $._identifier),
+      optional(seq($._AREAS, field('area_list', repeat1($._identifier))))
+    ),
+
+    ims_restart_statement: $ => seq(
+      $._RESTART,
+      field('checkpoint_id', $._identifier),
+      optional(seq($._AREAS, field('area_list', repeat1($._identifier))))
+    ),
+
+    ims_rollback_statement: $ => seq(
+      $._ROLLBACK,
+      optional(field('savepoint', $._identifier))
+    ),
+
+    // IMS transaction processing statements
+    ims_schedtask_statement: $ => seq(
+      $._SCHEDTASK,
+      field('transaction_code', $._string),
+      optional(seq($._PRIORITY, field('priority', $.integer)))
+    ),
+
+    ims_termtask_statement: $ => seq(
+      $._TERMTASK,
+      optional(field('completion_code', $.integer))
+    ),
+
+    // IMS message processing statements  
+    ims_get_message_statement: $ => seq(
+      $._GET,
+      $._MESSAGE,
+      field('io_area', $._identifier),
+      optional(seq($._LENGTH, field('length_field', $._identifier)))
+    ),
+
+    ims_send_message_statement: $ => seq(
+      $._SEND,
+      $._MESSAGE,
+      field('io_area', $._identifier),
+      field('destination', $._identifier),
+      optional(seq($._LENGTH, field('length_field', $._identifier)))
+    ),
+
+    ims_purge_message_statement: $ => seq(
+      $._PURGE,
+      $._MESSAGE,
+      field('destination', $._identifier)
+    ),
+
     _simple_value: $ => choice(
       $._identifier,
       $._basic_literal
@@ -2922,6 +3078,7 @@ module.exports = grammar({
     _CONVERTING: $ => /[cC][oO][nN][vV][eE][rR][tT][iI][nN][gG]/,
     _CORE_INDEX: $ => /[cC][oO][rR][eE]-[iI][nN][dD][eE][xX]/,
     _CORRESPONDING: $ => /[cC][oO][rR][rR]([eE][sS][pP][oO][nN][dD][iI][nN][gG])?/,
+    _CICS: $ => /[cC][iI][cC][sS]/,
     _COUNT: $ => /[cC][oO][uU][nN][tT]/,
     _CRT: $ => /[cC][rR][tT]/,
     _CURRENCY: $ => /[cC][uU][rR][rR][eE][nN][cC][yY]/,
@@ -2990,6 +3147,8 @@ module.exports = grammar({
     _ERROR: $ => /[eE][rR][rR][oO][rR]/,
     _ESCAPE: $ => /[eE][sS][cC][aA][pP][eE]/,
     _EVALUATE: $ => /[eE][vV][aA][lL][uU][aA][tT][eE]/,
+    _EXEC: $ => /[eE][xX][eE][cC]/,
+    _END_EXEC: $ => /[eE][nN][dD]-[eE][xX][eE][cC]/,
     _EVENT_STATUS: $ => /[eE][vV][eE][nN][tT]-[sS][tT][aA][tT][uU][sS]/,
     _EXCEPTION: $ => /[eE][xX][cC][eE][pP][tT][iI][oO][nN]/,
     _EXCLUSIVE: $ => /[eE][xX][cC][lL][uU][sS][iI][vV][eE]/,
@@ -3008,6 +3167,26 @@ module.exports = grammar({
     _FOREVER: $ => /[fF][oO][rR][eE][vV][eE][rR]/,
     _FORMS_OVERLAY: $ => /[fF][oO][rR][mM][sS]-[oO][vV][eE][rR][lL][aA][yY]/,
     _FREE: $ => /[fF][rR][eE][eE]/,
+    _SQL: $ => /[sS][qQ][lL]/,
+    _DLI: $ => /[dD][lL][iI]/,
+    _SQLIMS: $ => /[sS][qQ][lL][iI][mM][sS]/,
+    _GET: $ => /[gG][eE][tT]/,
+    _UNIQUE: $ => /[uU][nN][iI][qQ][uU][eE]/,
+    _NEXT: $ => /[nN][eE][xX][tT]/,
+    _HOLD_UNIQUE: $ => /[hH][oO][lL][dD][ \t\n]+[uU][nN][iI][qQ][uU][eE]/,
+    _HOLD_NEXT: $ => /[hH][oO][lL][dD][ \t\n]+[nN][eE][xX][tT]/,
+    _INSERT: $ => /[iI][nN][sS][eE][rR][tT]/,
+    _REPLACE: $ => /[rR][eE][pP][lL][aA][cC][eE]/,
+    _DELETE: $ => /[dD][eE][lL][eE][tT][eE]/,
+    _CHECKPOINT: $ => /[cC][hH][eE][cC][kK][pP][oO][iI][nN][tT]/,
+    _RESTART: $ => /[rR][eE][sS][tT][aA][rR][tT]/,
+    _ROLLBACK: $ => /[rR][oO][lL][lL][bB][aA][cC][kK]/,
+    _SCHEDTASK: $ => /[sS][cC][hH][eE][dD][tT][aA][sS][kK]/,
+    _TERMTASK: $ => /[tT][eE][rR][mM][tT][aA][sS][kK]/,
+    _MESSAGE: $ => /[mM][eE][sS][sS][aA][gG][eE]/,
+    _PURGE: $ => /[pP][uU][rR][gG][eE]/,
+    _PRIORITY: $ => /[pP][rR][iI][oO][rR][iI][tT][yY]/,
+    _AREAS: $ => /[aA][rR][eE][aA][sS]/,
     _FROM: $ => /[fF][rR][oO][mM]/,
     _FULL: $ => /[fF][uU][lL][lL]/,
     _FUNCTION: $ => /[fF][uU][nN][cC][tT][iI][oO][nN]/,
@@ -3015,6 +3194,15 @@ module.exports = grammar({
     _FUNCTION_NAME: $ => /[fF][uU][nN][cC][tT][iI][oO][nN]-[nN][aA][mM][eE]/,
     _GE: $ => /[gG][eE]/,
     _GENERATE: $ => /[gG][eE][nN][eE][rR][aA][tT][eE]/,
+    _INVOKE: $ => /[iI][nN][vV][oO][kK][eE]/,
+    _RECEIVE: $ => /[rR][eE][cC][eE][iI][vV][eE]/,
+    _SEND: $ => /[sS][eE][nN][dD]/,
+    _SUPPRESS: $ => /[sS][uU][pP][pP][rR][eE][sS][sS]/,
+    _TERMINATE: $ => /[tT][eE][rR][mM][iI][nN][aA][tT][eE]/,
+    _TRANSFORM: $ => /[tT][rR][aA][nN][sS][fF][oO][rR][mM]/,
+    _PRINTING: $ => /[pP][rR][iI][nN][tT][iI][nN][gG]/,
+    _THEN: $ => /[tT][hH][eE][nN]/,
+    _WHEN: $ => /[wW][hH][eE][nN]/,
     _GIVING: $ => /[gG][iI][vV][iI][nN][gG]/,
     _GLOBAL: $ => /[gG][lL][oO][bB][aA][lL]/,
     _GO: $ => /[gG][oO]/,
@@ -3247,6 +3435,8 @@ module.exports = grammar({
     _THRU: $ => /([tT][hH][rR][uU])|[tT][hH][rR][oO][uU][gG][hH]/,
     _TIME: $ => /[tT][iI][mM][eE]/,
     _TIMES: $ => /[tT][iI][mM][eE][sS]/,
+    _THRU: $ => /[tT][hH][rR][uU]/,
+    _THROUGH: $ => /[tT][hH][rR][oO][uU][gG][hH]/,
     _TO: $ => /[tT][oO]/,
     _FALSE: $ => /[fF][aA][lL][sS][eE]/,
     _FILE: $ => /[fF][iI][lL][eE]/,
