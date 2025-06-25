@@ -88,6 +88,22 @@ static bool start_with_word( TSLexer *lexer, char *words[], int number_of_words)
     return false;
 }
 
+bool handle_line_continuation(TSLexer *lexer) {
+    // Check if we're at the start of a line
+    if (lexer->get_column(lexer) == 6) {
+        // Look for hyphen in column 7 (continuation indicator)
+        if (lexer->lookahead == '-') {
+            lexer->advance(lexer, false);
+            // Skip whitespace after continuation character
+            while (lexer->lookahead == ' ' || lexer->lookahead == '\t') {
+                lexer->advance(lexer, false);
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
 bool tree_sitter_COBOL_external_scanner_scan(void *payload, TSLexer *lexer,
                                             const bool *valid_symbols) {
     if(lexer->lookahead == 0) {
