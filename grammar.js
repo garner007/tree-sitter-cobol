@@ -32,11 +32,10 @@ module.exports = grammar({
   ],
 
   rules: {
-    start: $ => repeat(
-      choice(
-        $.program_definition,
-        //optional($.function_definition) //todo
-      )
+    start: $ => choice(
+      $.program_definition,
+      $.copybook_definition
+      //optional($.function_definition) //todo
     ),
 
     _LINE_COMMENT_ALIAS: $ => alias($._LINE_COMMENT, $.comment),
@@ -1332,7 +1331,7 @@ module.exports = grammar({
     )),
 
     _procedure_division_statement: $ => choice(
-      $._statement,
+      seq($._statement, optional('.')),
       $._start_handler,
       $._end_statement,
     ),
@@ -2337,7 +2336,7 @@ module.exports = grammar({
 
     perform_procedure: $ => seq(
       $.label,
-      optional(seq($.THRU, $.label)),
+      optional(seq(choice($._THRU, $._THROUGH), $.label)),
     ),
 
     perform_option: $ => choice(
@@ -3436,6 +3435,8 @@ module.exports = grammar({
     _THRU: $ => /([tT][hH][rR][uU])|[tT][hH][rR][oO][uU][gG][hH]/,
     _TIME: $ => /[tT][iI][mM][eE]/,
     _TIMES: $ => /[tT][iI][mM][eE][sS]/,
+    _THRU: $ => /[tT][hH][rR][uU]/,
+    _THROUGH: $ => /[tT][hH][rR][oO][uU][gG][hH]/,
     _TO: $ => /[tT][oO]/,
     _FALSE: $ => /[fF][aA][lL][sS][eE]/,
     _FILE: $ => /[fF][iI][lL][eE]/,

@@ -6894,8 +6894,25 @@
       "type": "CHOICE",
       "members": [
         {
-          "type": "SYMBOL",
-          "name": "_statement"
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "_statement"
+            },
+            {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "."
+                },
+                {
+                  "type": "BLANK"
+                }
+              ]
+            }
+          ]
         },
         {
           "type": "SYMBOL",
@@ -12993,8 +13010,17 @@
               "type": "SEQ",
               "members": [
                 {
-                  "type": "SYMBOL",
-                  "name": "THRU"
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "SYMBOL",
+                      "name": "_THRU"
+                    },
+                    {
+                      "type": "SYMBOL",
+                      "name": "_THROUGH"
+                    }
+                  ]
                 },
                 {
                   "type": "SYMBOL",
@@ -18859,7 +18885,7 @@
     },
     "_THRU": {
       "type": "PATTERN",
-      "value": "([tT][hH][rR][uU])|[tT][hH][rR][oO][uU][gG][hH]"
+      "value": "[tT][hH][rR][uU]"
     },
     "_TIME": {
       "type": "PATTERN",
@@ -18868,6 +18894,10 @@
     "_TIMES": {
       "type": "PATTERN",
       "value": "[tT][iI][mM][eE][sS]"
+    },
+    "_THROUGH": {
+      "type": "PATTERN",
+      "value": "[tT][hH][rR][oO][uU][gG][hH]"
     },
     "_TO": {
       "type": "PATTERN",
