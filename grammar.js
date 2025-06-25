@@ -51,6 +51,10 @@ module.exports = grammar({
       //optional($.LINE_PREFIX_COMMENT),
     )),
 
+    copybook_definition: $ => repeat1(
+      seq($.data_description, repeat1('.'))
+    ),
+
     identification_division: $ => seq(
       $._IDENTIFICATION, $._DIVISION, '.',
       optional(
