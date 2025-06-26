@@ -19,6 +19,7 @@ module.exports = grammar({
     $._LINE_COMMENT,
     $.comment_entry,
     $._multiline_string,
+    $.area_a_word,
   ],
 
   extras: $ => [
@@ -1351,7 +1352,7 @@ module.exports = grammar({
     ),
 
     paragraph_header: $ => seq(
-      field('name', choice($._WORD, $.integer)),
+      field('name', choice($.area_a_word, $._WORD, $.integer)),
       '.'
     ),
 

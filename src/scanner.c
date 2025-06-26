@@ -1,5 +1,6 @@
 #include <tree_sitter/parser.h>
 #include <wctype.h>
+#include <ctype.h>
 
 enum TokenType {
     WHITE_SPACES,
@@ -8,6 +9,7 @@ enum TokenType {
     LINE_COMMENT,
     COMMENT_ENTRY,
     multiline_string,
+    AREA_A_WORD,
 };
 
 void *tree_sitter_COBOL_external_scanner_create() {
@@ -155,6 +157,34 @@ bool tree_sitter_COBOL_external_scanner_scan(void *payload, TSLexer *lexer,
             lexer->result_symbol = LINE_SUFFIX_COMMENT;
             lexer->mark_end(lexer);
             return true;
+        }
+    }
+
+    if(valid_symbols[AREA_A_WORD]) {
+        // Check if we're in Area A (columns 8-11) and have a word that looks like a paragraph name
+        int current_col = lexer->get_column(lexer);
+        if(current_col >= 7 && current_col <= 10) {  // Area A (0-indexed columns 7-10 = COBOL columns 8-11)
+            if(isalpha(lexer->lookahead) || isdigit(lexer->lookahead)) {
+                // Save current position to check for period
+                int start_pos = lexer->get_column(lexer);
+                
+                // Consume the word
+                while(isalnum(lexer->lookahead) || lexer->lookahead == '-') {
+                    lexer->advance(lexer, false);
+                }
+                
+                // Skip whitespace to check for period
+                while(lexer->lookahead == ' ' || lexer->lookahead == '\t') {
+                    lexer->advance(lexer, false);
+                }
+                
+                // Only return AREA_A_WORD if followed by a period (indicating paragraph name)
+                if(lexer->lookahead == '.') {
+                    lexer->result_symbol = AREA_A_WORD;
+                    lexer->mark_end(lexer);
+                    return true;
+                }
+            }
         }
     }
 

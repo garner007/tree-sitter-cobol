@@ -9632,6 +9632,10 @@
         "required": true,
         "types": [
           {
+            "type": "area_a_word",
+            "named": true
+          },
+          {
             "type": "integer",
             "named": true
           }
@@ -16122,9 +16126,12 @@
     "named": false
   },
   {
+    "type": "area_a_word",
+    "named": true
+  },
+  {
     "type": "comment",
-    "named": true,
-    "extra": true
+    "named": true
   },
   {
     "type": "comment_entry",

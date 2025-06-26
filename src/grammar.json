@@ -7026,6 +7026,10 @@
             "members": [
               {
                 "type": "SYMBOL",
+                "name": "area_a_word"
+              },
+              {
+                "type": "SYMBOL",
                 "name": "_WORD"
               },
               {
@@ -20219,9 +20223,12 @@
     {
       "type": "SYMBOL",
       "name": "_multiline_string"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "area_a_word"
     }
   ],
   "inline": [],
-  "supertypes": [],
-  "reserved": {}
+  "supertypes": []
 }
