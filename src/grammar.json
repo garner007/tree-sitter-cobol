@@ -4,16 +4,17 @@
   "word": "_WORD",
   "rules": {
     "start": {
-      "type": "REPEAT",
-      "content": {
-        "type": "CHOICE",
-        "members": [
-          {
-            "type": "SYMBOL",
-            "name": "program_definition"
-          }
-        ]
-      }
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "program_definition"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "copybook_definition"
+        }
+      ]
     },
     "_LINE_COMMENT_ALIAS": {
       "type": "ALIAS",
@@ -79,6 +80,25 @@
             "content": {
               "type": "SYMBOL",
               "name": "end_program"
+            }
+          }
+        ]
+      }
+    },
+    "copybook_definition": {
+      "type": "REPEAT1",
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "SYMBOL",
+            "name": "data_description"
+          },
+          {
+            "type": "REPEAT1",
+            "content": {
+              "type": "STRING",
+              "value": "."
             }
           }
         ]
@@ -6414,7 +6434,7 @@
           "members": [
             {
               "type": "SYMBOL",
-              "name": "_procedure_division_contenet"
+              "name": "_procedure_division_content"
             },
             {
               "type": "BLANK"
@@ -6513,11 +6533,11 @@
           "members": [
             {
               "type": "SYMBOL",
-              "name": "REFERENCE"
+              "name": "VALUE"
             },
             {
               "type": "SYMBOL",
-              "name": "VALUE"
+              "name": "REFERENCE"
             }
           ]
         }
@@ -6718,7 +6738,7 @@
         ]
       }
     },
-    "_procedure_division_contenet": {
+    "_procedure_division_content": {
       "type": "PREC_RIGHT",
       "value": 0,
       "content": {
@@ -6891,38 +6911,42 @@
       }
     },
     "_procedure_division_statement": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "SEQ",
-          "members": [
-            {
-              "type": "SYMBOL",
-              "name": "_statement"
-            },
-            {
-              "type": "CHOICE",
-              "members": [
-                {
-                  "type": "STRING",
-                  "value": "."
-                },
-                {
-                  "type": "BLANK"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "SYMBOL",
-          "name": "_start_handler"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "_end_statement"
-        }
-      ]
+      "type": "PREC_RIGHT",
+      "value": 0,
+      "content": {
+        "type": "CHOICE",
+        "members": [
+          {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "_statement"
+              },
+              {
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "STRING",
+                    "value": "."
+                  },
+                  {
+                    "type": "BLANK"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "SYMBOL",
+            "name": "_start_handler"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "_end_statement"
+          }
+        ]
+      }
     },
     "_procedure": {
       "type": "CHOICE",
@@ -7183,6 +7207,10 @@
         },
         {
           "type": "SYMBOL",
+          "name": "perform_statement_loop"
+        },
+        {
+          "type": "SYMBOL",
           "name": "read_statement"
         },
         {
@@ -7418,10 +7446,6 @@
         {
           "type": "SYMBOL",
           "name": "when_other"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "perform_statement_loop"
         },
         {
           "type": "SYMBOL",
@@ -20198,5 +20222,6 @@
     }
   ],
   "inline": [],
-  "supertypes": []
+  "supertypes": [],
+  "reserved": {}
 }

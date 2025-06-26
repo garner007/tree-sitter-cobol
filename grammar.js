@@ -1243,7 +1243,7 @@ module.exports = grammar({
       optional($.procedure_returning),
       '.',
       optional($.procedure_declaratives),
-      optional($._procedure_division_contenet)
+      optional($._procedure_division_content)
     ),
 
     procedure_using_chaining: $ => seq(
@@ -1270,11 +1270,6 @@ module.exports = grammar({
       seq($.SIZE, optional($._IS), $.integer),
     ),
 
-    procedure_type: $ => seq(
-      optional($._BY),
-      choice($.REFERENCE, $.VALUE)
-    ),
-
     procedure_returning: $ => seq(
       $._RETURNING,
       $._WORD
@@ -1296,7 +1291,7 @@ module.exports = grammar({
       $._end_statement
     )),
 
-    _procedure_division_contenet: $ => prec.right(choice(
+    _procedure_division_content: $ => prec.right(choice(
       seq(
         optional($._procedure_division_headers),
         repeat(seq(
@@ -1334,11 +1329,11 @@ module.exports = grammar({
       ),
     )),
 
-    _procedure_division_statement: $ => choice(
+    _procedure_division_statement: $ => prec.right(choice(
       seq($._statement, optional('.')),
       $._start_handler,
       $._end_statement,
-    ),
+    )),
 
     _procedure: $ => choice(
       $.section_header,
@@ -1403,6 +1398,7 @@ module.exports = grammar({
       $.multiply_statement,
       $.open_statement,
       $.perform_statement_call_proc,
+      $.perform_statement_loop,
       $.read_statement,
       $.receive_statement,
       $.release_statement,
@@ -1468,7 +1464,6 @@ module.exports = grammar({
       $.evaluate_header,
       $.when,
       $.when_other,
-      $.perform_statement_loop,
       $.if_header,
       $.else_if_header,
       $.else_header,

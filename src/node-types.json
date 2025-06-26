@@ -1695,6 +1695,10 @@
             "named": true
           },
           {
+            "type": "perform_statement_loop",
+            "named": true
+          },
+          {
             "type": "read_statement",
             "named": true
           },
@@ -1918,6 +1922,10 @@
           },
           {
             "type": "perform_statement_call_proc",
+            "named": true
+          },
+          {
+            "type": "perform_statement_loop",
             "named": true
           },
           {
@@ -3725,6 +3733,21 @@
       "types": [
         {
           "type": "replacing_clause",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "copybook_definition",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "data_description",
           "named": true
         }
       ]
@@ -6142,6 +6165,10 @@
             "named": true
           },
           {
+            "type": "perform_statement_loop",
+            "named": true
+          },
+          {
             "type": "read_statement",
             "named": true
           },
@@ -6365,6 +6392,10 @@
           },
           {
             "type": "perform_statement_call_proc",
+            "named": true
+          },
+          {
+            "type": "perform_statement_loop",
             "named": true
           },
           {
@@ -9704,10 +9735,6 @@
       "multiple": true,
       "required": true,
       "types": [
-        {
-          "type": "THRU",
-          "named": true
-        },
         {
           "type": "label",
           "named": true
@@ -13570,9 +13597,13 @@
     "root": true,
     "fields": {},
     "children": {
-      "multiple": true,
-      "required": false,
+      "multiple": false,
+      "required": true,
       "types": [
+        {
+          "type": "copybook_definition",
+          "named": true
+        },
         {
           "type": "program_definition",
           "named": true
@@ -16092,7 +16123,8 @@
   },
   {
     "type": "comment",
-    "named": true
+    "named": true,
+    "extra": true
   },
   {
     "type": "comment_entry",
