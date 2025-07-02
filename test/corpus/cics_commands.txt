@@ -1,0 +1,85 @@
+================================================================================
+CICS LINK command
+================================================================================
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. TEST-LINK.
+       PROCEDURE DIVISION.
+           EXEC CICS
+               LINK PROGRAM('PROG1')
+               COMMAREA(WS-COMMAREA)
+               LENGTH(WS-LENGTH)
+           END-EXEC.
+
+--------------------------------------------------------------------------------
+
+(start
+  (program_definition
+    (identification_division
+      (program_name))
+    (procedure_division
+      (exec_statement
+        (cics_command
+          (cics_link_command
+            program: (string)
+            commarea: (user_defined_word)
+            length: (user_defined_word)))))))
+
+================================================================================
+CICS XCTL command
+================================================================================
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. TEST-XCTL.
+       PROCEDURE DIVISION.
+           EXEC CICS
+               XCTL PROGRAM('PROG2')
+               COMMAREA(WS-COMMAREA)
+               LENGTH(100)
+           END-EXEC.
+
+--------------------------------------------------------------------------------
+
+(start
+  (program_definition
+    (identification_division
+      (program_name))
+    (procedure_division
+      (exec_statement
+        (cics_command
+          (cics_xctl_command
+            program: (string)
+            commarea: (user_defined_word)
+            length: (number
+              (integer)))))))
+
+================================================================================
+CICS LINK with RESP
+================================================================================
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. TEST-RESP.
+       PROCEDURE DIVISION.
+           EXEC CICS
+               LINK PROGRAM(WS-PROG-NAME)
+               COMMAREA(WS-AREA)
+               LENGTH(WS-LEN)
+               RESP(WS-RESP)
+               RESP2(WS-RESP2)
+           END-EXEC.
+
+--------------------------------------------------------------------------------
+
+(start
+  (program_definition
+    (identification_division
+      (program_name))
+    (procedure_division
+      (exec_statement
+        (cics_command
+          (cics_link_command
+            program: (user_defined_word)
+            commarea: (user_defined_word)
+            length: (user_defined_word)
+            resp: (user_defined_word)
+            resp2: (user_defined_word)))))))

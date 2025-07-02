@@ -1334,11 +1334,11 @@ module.exports = grammar({
       ),
     )),
 
-    _procedure_division_statement: $ => choice(
+    _procedure_division_statement: $ => prec.left(choice(
       seq($._statement, optional('.')),
       $._start_handler,
       $._end_statement,
-    ),
+    )),
 
     _procedure: $ => choice(
       $.section_header,
@@ -2762,12 +2762,144 @@ module.exports = grammar({
     // EXEC statement for embedded SQL/CICS/IMS
     exec_statement: $ => seq(
       $._EXEC,
-      field('type', choice($._SQL, $._CICS, $._DLI, $._SQLIMS)),
-      field('body', repeat(choice(
-        /[^\r\n]+/,
-        /\r?\n/
-      ))),
+      field('type', choice(
+        seq($._SQL, field('body', repeat(choice(/[^\r\n]+/, /\r?\n/)))),
+        seq($._CICS, field('command', $.cics_command)),
+        seq($._DLI, field('body', repeat(choice(/[^\r\n]+/, /\r?\n/)))),
+        seq($._SQLIMS, field('body', repeat(choice(/[^\r\n]+/, /\r?\n/))))
+      )),
       $._END_EXEC
+    ),
+
+    // CICS command structure
+    cics_command: $ => choice(
+      $.cics_link_command,
+      $.cics_xctl_command,
+      $.cics_send_command,
+      $.cics_receive_command,
+      $.cics_return_command,
+      $.cics_read_command,
+      $.cics_write_command,
+      $.cics_delete_command,
+      $.cics_inquire_command,
+      $.cics_handle_command,
+      $.cics_syncpoint_command,
+      $.cics_asktime_command,
+      // Generic fallback for unstructured CICS commands
+      repeat1(choice(/[^\r\n]+/, /\r?\n/))
+    ),
+
+    // CICS LINK command
+    cics_link_command: $ => seq(
+      $._CICS_LINK,
+      seq($._CICS_PROGRAM, '(', field('program', choice($._string, $._identifier)), ')'),
+      optional(seq($._CICS_COMMAREA, '(', field('commarea', $._identifier), ')')),
+      optional(seq($._CICS_LENGTH, '(', field('length', choice($.number, $._identifier)), ')')),
+      optional(seq($._CICS_RESP, '(', field('resp', $._identifier), ')')),
+      optional(seq($._CICS_RESP2, '(', field('resp2', $._identifier), ')'))
+    ),
+
+    // CICS XCTL command
+    cics_xctl_command: $ => seq(
+      $._CICS_XCTL,
+      seq($._CICS_PROGRAM, '(', field('program', choice($._string, $._identifier)), ')'),
+      optional(seq($._CICS_COMMAREA, '(', field('commarea', $._identifier), ')')),
+      optional(seq($._CICS_LENGTH, '(', field('length', choice($.number, $._identifier)), ')'))
+    ),
+
+    // CICS SEND command
+    cics_send_command: $ => seq(
+      $._SEND,
+      choice(
+        // SEND TEXT
+        seq(
+          $._CICS_TEXT,
+          optional(seq($._FROM, '(', field('from', $._identifier), ')')),
+          optional(seq($._CICS_LENGTH, '(', field('length', choice($.number, $._identifier)), ')')),
+          optional($._CICS_ERASE)
+        ),
+        // SEND MAP
+        seq(
+          seq($._CICS_MAP, '(', field('map', choice($._string, $._identifier)), ')'),
+          optional(seq($._CICS_MAPSET, '(', field('mapset', choice($._string, $._identifier)), ')')),
+          optional(seq($._FROM, '(', field('from', $._identifier), ')')),
+          optional($._CICS_DATAONLY),
+          optional($._CICS_CURSOR)
+        )
+      )
+    ),
+
+    // CICS RECEIVE command
+    cics_receive_command: $ => seq(
+      $._RECEIVE,
+      seq($._CICS_MAP, '(', field('map', choice($._string, $._identifier)), ')'),
+      optional(seq($._CICS_MAPSET, '(', field('mapset', choice($._string, $._identifier)), ')')),
+      optional(seq($._INTO, '(', field('into', $._identifier), ')')),
+      optional(seq($._CICS_RESP, '(', field('resp', $._identifier), ')'))
+    ),
+
+    // CICS RETURN command
+    cics_return_command: $ => seq(
+      $._RETURN,
+      optional(seq($._CICS_TRANSID, '(', field('transid', choice($._string, $._identifier)), ')')),
+      optional(seq($._CICS_COMMAREA, '(', field('commarea', $._identifier), ')')),
+      optional(seq($._CICS_LENGTH, '(', field('length', choice($.number, $._identifier)), ')'))
+    ),
+
+    // CICS READ command
+    cics_read_command: $ => seq(
+      $._READ,
+      seq($._CICS_FILE, '(', field('file', choice($._string, $._identifier)), ')'),
+      optional(seq($._INTO, '(', field('into', $._identifier), ')')),
+      seq($._CICS_RIDFLD, '(', field('ridfld', $._identifier), ')'),
+      optional(seq($._CICS_LENGTH, '(', field('length', choice($.number, $._identifier)), ')')),
+      optional(seq($._CICS_RESP, '(', field('resp', $._identifier), ')'))
+    ),
+
+    // CICS WRITE command
+    cics_write_command: $ => seq(
+      $._WRITE,
+      seq($._CICS_FILE, '(', field('file', choice($._string, $._identifier)), ')'),
+      seq($._FROM, '(', field('from', $._identifier), ')'),
+      seq($._CICS_RIDFLD, '(', field('ridfld', $._identifier), ')'),
+      optional(seq($._CICS_LENGTH, '(', field('length', choice($.number, $._identifier)), ')'))
+    ),
+
+    // CICS DELETE command
+    cics_delete_command: $ => seq(
+      $._DELETE,
+      seq($._CICS_FILE, '(', field('file', choice($._string, $._identifier)), ')'),
+      seq($._CICS_RIDFLD, '(', field('ridfld', $._identifier), ')'),
+      optional(seq($._CICS_RESP, '(', field('resp', $._identifier), ')'))
+    ),
+
+    // CICS INQUIRE command
+    cics_inquire_command: $ => seq(
+      $._CICS_INQUIRE,
+      seq($._CICS_PROGRAM, '(', field('program', choice($._string, $._identifier)), ')'),
+      optional(seq($._CICS_STATUS, '(', field('status', $._identifier), ')')),
+      optional(seq($._CICS_RESP, '(', field('resp', $._identifier), ')'))
+    ),
+
+    // CICS HANDLE CONDITION command
+    cics_handle_command: $ => seq(
+      $._CICS_HANDLE,
+      $._CICS_CONDITION,
+      repeat1(seq(
+        field('condition', choice($._CICS_ERROR, $._CICS_NOTFND, $._identifier)),
+        '(',
+        field('label', $._identifier),
+        ')'
+      ))
+    ),
+
+    // CICS SYNCPOINT command
+    cics_syncpoint_command: $ => $._CICS_SYNCPOINT,
+
+    // CICS ASKTIME command
+    cics_asktime_command: $ => seq(
+      $._CICS_ASKTIME,
+      optional(seq($._CICS_ABSTIME, '(', field('abstime', $._identifier), ')'))
     ),
 
     // Additional utility statements
@@ -3489,6 +3621,32 @@ module.exports = grammar({
     _ZERO: $ => choice('zero', 'ZERO', 'Zero'),
     _ZEROS: $ => choice('zeros', 'ZEROS', 'Zeros', 'zeroes', 'ZEROES', 'Zeroes'),
 
+    // CICS-specific keywords
+    _CICS_LINK: $ => /[lL][iI][nN][kK]/,
+    _CICS_XCTL: $ => /[xX][cC][tT][lL]/,
+    _CICS_PROGRAM: $ => /[pP][rR][oO][gG][rR][aA][mM]/,
+    _CICS_COMMAREA: $ => /[cC][oO][mM][mM][aA][rR][eE][aA]/,
+    _CICS_LENGTH: $ => /[lL][eE][nN][gG][tT][hH]/,
+    _CICS_RESP: $ => /[rR][eE][sS][pP]/,
+    _CICS_RESP2: $ => /[rR][eE][sS][pP]2/,
+    _CICS_TRANSID: $ => /[tT][rR][aA][nN][sS][iI][dD]/,
+    _CICS_MAP: $ => /[mM][aA][pP]/,
+    _CICS_MAPSET: $ => /[mM][aA][pP][sS][eE][tT]/,
+    _CICS_TEXT: $ => /[tT][eE][xX][tT]/,
+    _CICS_DATAONLY: $ => /[dD][aA][tT][aA][oO][nN][lL][yY]/,
+    _CICS_ERASE: $ => /[eE][rR][aA][sS][eE]/,
+    _CICS_CURSOR: $ => /[cC][uU][rR][sS][oO][rR]/,
+    _CICS_HANDLE: $ => /[hH][aA][nN][dD][lL][eE]/,
+    _CICS_CONDITION: $ => /[cC][oO][nN][dD][iI][tT][iI][oO][nN]/,
+    _CICS_ERROR: $ => /[eE][rR][rR][oO][rR]/,
+    _CICS_NOTFND: $ => /[nN][oO][tT][fF][nN][dD]/,
+    _CICS_SYNCPOINT: $ => /[sS][yY][nN][cC][pP][oO][iI][nN][tT]/,
+    _CICS_ASKTIME: $ => /[aA][sS][kK][tT][iI][mM][eE]/,
+    _CICS_ABSTIME: $ => /[aA][bB][sS][tT][iI][mM][eE]/,
+    _CICS_INQUIRE: $ => /[iI][nN][qQ][uU][iI][rR][eE]/,
+    _CICS_STATUS: $ => /[sS][tT][aA][tT][uU][sS]/,
+    _CICS_FILE: $ => /[fF][iI][lL][eE]/,
+    _CICS_RIDFLD: $ => /[rR][iI][dD][fF][lL][dD]/,
 
     //ACCEPT: $ => $._ACCEPT,
     //ACCESS: $ => $._ACCESS,
