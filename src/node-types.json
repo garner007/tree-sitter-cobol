@@ -1695,6 +1695,10 @@
             "named": true
           },
           {
+            "type": "perform_statement_loop",
+            "named": true
+          },
+          {
             "type": "read_statement",
             "named": true
           },
@@ -1918,6 +1922,10 @@
           },
           {
             "type": "perform_statement_call_proc",
+            "named": true
+          },
+          {
+            "type": "perform_statement_loop",
             "named": true
           },
           {
@@ -7164,6 +7172,10 @@
             "named": true
           },
           {
+            "type": "perform_statement_loop",
+            "named": true
+          },
+          {
             "type": "read_statement",
             "named": true
           },
@@ -7387,6 +7399,10 @@
           },
           {
             "type": "perform_statement_call_proc",
+            "named": true
+          },
+          {
+            "type": "perform_statement_loop",
             "named": true
           },
           {
@@ -10622,6 +10638,10 @@
         "multiple": false,
         "required": true,
         "types": [
+          {
+            "type": "area_a_word",
+            "named": true
+          },
           {
             "type": "integer",
             "named": true
@@ -17111,6 +17131,10 @@
   {
     "type": "^",
     "named": false
+  },
+  {
+    "type": "area_a_word",
+    "named": true
   },
   {
     "type": "comment",
