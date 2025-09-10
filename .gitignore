@@ -40,3 +40,6 @@ test/cobol85/summary.txt
 
 # Testing directory
 wangold_tree_sitter_cobol/
+
+# IDE settings
+/.idea/
