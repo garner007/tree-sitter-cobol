@@ -1,0 +1,20 @@
+{
+  "grammars": [
+    {
+      "name": "COBOL",
+      "scope": "source.cobol",
+      "file-types": [
+        "cbl",
+        "CBL",
+        "cob",
+        "COB",
+        "txt"
+      ],
+      "injection-regex": "^cobol$",
+      "url": "https://github.com/yutaro-sakamoto/tree-sitter-cobol"
+    }
+  ],
+  "metadata": {
+    "version": "0.0.1"
+  }
+}

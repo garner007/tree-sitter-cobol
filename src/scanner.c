@@ -133,7 +133,10 @@ bool tree_sitter_COBOL_external_scanner_scan(void *payload, TSLexer *lexer,
     }
 
     if(valid_symbols[LINE_COMMENT]) {
-        if(lexer->get_column(lexer) == 6) {
+        // Be tolerant: treat '*' or '/' in Area A (columns 1-6, 0-index 0-5)
+        // and the traditional indicator column (0-index 6) as a line comment.
+        int col = lexer->get_column(lexer);
+        if(col <= 6) {
             if(lexer->lookahead == '*' || lexer->lookahead == '/') {
                 while(lexer->lookahead != '\n' && lexer->lookahead != 0) {
                     lexer->advance(lexer, true);
@@ -142,6 +145,7 @@ bool tree_sitter_COBOL_external_scanner_scan(void *payload, TSLexer *lexer,
                 lexer->mark_end(lexer);
                 return true;
             } else {
+                // Not a comment indicator; let the parser continue.
                 lexer->advance(lexer, true);
                 lexer->mark_end(lexer);
                 return false;
@@ -150,7 +154,10 @@ bool tree_sitter_COBOL_external_scanner_scan(void *payload, TSLexer *lexer,
     }
 
     if(valid_symbols[LINE_SUFFIX_COMMENT]) {
-        if(lexer->get_column(lexer) >= 72) {
+        // COBOL identification area starts at column 73 (0-indexed 72).
+        // Many sources place sequence numbers at the far right.
+        // Treat column >= 71 as suffix/identification area to preserve code region.
+        if(lexer->get_column(lexer) >= 71) {
             while(lexer->lookahead != '\n' && lexer->lookahead != 0) {
                 lexer->advance(lexer, true);
             }

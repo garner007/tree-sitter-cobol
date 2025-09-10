@@ -1,0 +1,201 @@
+================================================================================
+EXEC SQL simple
+================================================================================
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. TESTSQL.
+       PROCEDURE DIVISION.
+           EXEC SQL END-EXEC.
+
+--------------------------------------------------------------------------------
+
+(start
+  (program_definition
+    (identification_division
+      (program_name))
+    (procedure_division
+      (exec_statement))))
+
+================================================================================
+EXEC DLI multiline with END-EXEC.
+================================================================================
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. TESTDLI2.
+       PROCEDURE DIVISION.
+           EXEC DLI
+               CALL PCB
+               GET UNIQUE
+               INTO :AREA
+           END-EXEC.
+
+--------------------------------------------------------------------------------
+
+(start
+  (program_definition
+    (identification_division
+      (program_name))
+    (procedure_division
+      (exec_statement
+        (exec_text)
+        (exec_text)
+        (exec_text)))))
+
+================================================================================
+EXEC DLI multiline terminated by period
+================================================================================
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. TESTDLI3.
+       PROCEDURE DIVISION.
+           EXEC DLI
+               GU PCB
+               SSA (KEY)
+           .
+
+--------------------------------------------------------------------------------
+
+(start
+  (program_definition
+    (identification_division
+      (program_name))
+    (procedure_division
+      (exec_statement
+        (exec_text)
+        (exec_text)))))
+
+================================================================================
+EXEC SQLIMS multiline with END-EXEC.
+================================================================================
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. TESTSQLIMS2.
+       PROCEDURE DIVISION.
+           EXEC SQLIMS
+               CONNECT :USER
+               USING :PWD
+               MODE 2
+           END-EXEC.
+
+--------------------------------------------------------------------------------
+
+(start
+  (program_definition
+    (identification_division
+      (program_name))
+    (procedure_division
+      (exec_statement
+        (exec_text)
+        (exec_text)
+        (exec_text)))))
+
+================================================================================
+EXEC SQLIMS multiline terminated by period
+================================================================================
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. TESTSQLIMS3.
+       PROCEDURE DIVISION.
+           EXEC SQLIMS
+               DISCONNECT
+               COMMIT WORK
+           .
+
+--------------------------------------------------------------------------------
+
+(start
+  (program_definition
+    (identification_division
+      (program_name))
+    (procedure_division
+      (exec_statement
+        (exec_text)
+        (exec_text)))))
+
+================================================================================
+EXEC SQL multiline with END-EXEC.
+================================================================================
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. TESTSQL2.
+       PROCEDURE DIVISION.
+           EXEC SQL
+               SELECT A, B
+                 INTO :A, :B
+                 FROM T1
+                WHERE C = :C
+           END-EXEC.
+
+--------------------------------------------------------------------------------
+
+(start
+  (program_definition
+    (identification_division
+      (program_name))
+    (procedure_division
+      (exec_statement
+        (exec_text)
+        (exec_text)
+        (exec_text)
+        (exec_text)))))
+
+================================================================================
+EXEC SQL multiline terminated by period
+================================================================================
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. TESTSQL3.
+       PROCEDURE DIVISION.
+           EXEC SQL
+               UPDATE T1
+                  SET A = 1
+                WHERE B = :B
+           .
+
+--------------------------------------------------------------------------------
+
+(start
+  (program_definition
+    (identification_division
+      (program_name))
+    (procedure_division
+      (exec_statement
+        (exec_text)
+        (exec_text)
+        (exec_text)))))
+
+================================================================================
+EXEC DLI simple
+================================================================================
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. TESTDLI.
+       PROCEDURE DIVISION.
+           EXEC DLI END-EXEC.
+
+--------------------------------------------------------------------------------
+
+(start
+  (program_definition
+    (identification_division
+      (program_name))
+    (procedure_division
+      (exec_statement))))
+
+================================================================================
+EXEC SQLIMS simple
+================================================================================
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. TESTSQLIMS.
+       PROCEDURE DIVISION.
+           EXEC SQLIMS END-EXEC.
+
+--------------------------------------------------------------------------------
+
+(start
+  (program_definition
+    (identification_division
+      (program_name))
+    (procedure_division
+      (exec_statement))))

@@ -1,0 +1,90 @@
+====================================
+COPY statements tolerated anywhere
+====================================
+       identification division.
+       program-id. a.
+       data division.
+       working-storage section.
+       COPY PAYVSAM.
+       01  FOO               PIC X.
+       COPY "BAR" OF LIBX.
+       01  BAZ               PIC 9.
+       procedure division.
+       COPY PAYVSAM SUPPRESS.
+       display FOO.
+---
+
+(start
+  (program_definition
+    (identification_division
+      (program_name))
+    (data_division
+      (working_storage_section
+        (copy_statement
+          (WORD))
+        (data_description
+          (level_number)
+          (entry_name)
+          (picture_clause
+            (picture_x)))
+        (copy_statement
+          (string)
+          (WORD))
+        (data_description
+          (level_number)
+          (entry_name)
+          (picture_clause
+            (picture_9
+              (p9p_group))))))
+    (procedure_division
+      (copy_statement
+        (WORD)
+        (SUPPRESS))
+      (display_statement
+        (qualified_word
+          (WORD)))
+      (period))))
+
+====================================
+COPY with REPLACING variants
+====================================
+       identification division.
+       program-id. a.
+       data division.
+       working-storage section.
+       COPY FOO REPLACING LEADING "X" BY "Y".
+       COPY "FOO" IN "LIB" REPLACING TRAILING "A" BY "B".
+       01  X                 PIC X.
+       procedure division.
+       display 1.
+---
+
+(start
+  (program_definition
+    (identification_division
+      (program_name))
+    (data_division
+      (working_storage_section
+        (copy_statement
+          (WORD)
+          (LEADING)
+          (string)
+          (BY)
+          (string))
+        (copy_statement
+          (string)
+          (string)
+          (TRAILING)
+          (string)
+          (BY)
+          (string))
+        (data_description
+          (level_number)
+          (entry_name)
+          (picture_clause
+            (picture_x)))))
+    (procedure_division
+      (display_statement
+        (number
+          (integer)))
+      (period))))

@@ -2775,7 +2775,7 @@
     "fields": {
       "comment": {
         "multiple": true,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "comment_entry",
@@ -3166,7 +3166,7 @@
     "fields": {},
     "children": {
       "multiple": false,
-      "required": false,
+      "required": true,
       "types": [
         {
           "type": "cics_asktime_command",
@@ -3418,25 +3418,17 @@
     "named": true,
     "fields": {
       "commarea": {
-        "multiple": true,
+        "multiple": false,
         "required": false,
         "types": [
           {
-            "type": "qualified_word",
-            "named": true
-          },
-          {
-            "type": "refmod",
-            "named": true
-          },
-          {
-            "type": "subref",
+            "type": "user_defined_word",
             "named": true
           }
         ]
       },
       "length": {
-        "multiple": true,
+        "multiple": false,
         "required": false,
         "types": [
           {
@@ -3444,21 +3436,13 @@
             "named": true
           },
           {
-            "type": "qualified_word",
-            "named": true
-          },
-          {
-            "type": "refmod",
-            "named": true
-          },
-          {
-            "type": "subref",
+            "type": "user_defined_word",
             "named": true
           }
         ]
       },
       "program": {
-        "multiple": true,
+        "multiple": false,
         "required": true,
         "types": [
           {
@@ -3470,19 +3454,11 @@
             "named": true
           },
           {
-            "type": "qualified_word",
-            "named": true
-          },
-          {
-            "type": "refmod",
-            "named": true
-          },
-          {
             "type": "string",
             "named": true
           },
           {
-            "type": "subref",
+            "type": "user_defined_word",
             "named": true
           },
           {
@@ -3492,37 +3468,21 @@
         ]
       },
       "resp": {
-        "multiple": true,
+        "multiple": false,
         "required": false,
         "types": [
           {
-            "type": "qualified_word",
-            "named": true
-          },
-          {
-            "type": "refmod",
-            "named": true
-          },
-          {
-            "type": "subref",
+            "type": "user_defined_word",
             "named": true
           }
         ]
       },
       "resp2": {
-        "multiple": true,
+        "multiple": false,
         "required": false,
         "types": [
           {
-            "type": "qualified_word",
-            "named": true
-          },
-          {
-            "type": "refmod",
-            "named": true
-          },
-          {
-            "type": "subref",
+            "type": "user_defined_word",
             "named": true
           }
         ]
@@ -4057,25 +4017,17 @@
     "named": true,
     "fields": {
       "commarea": {
-        "multiple": true,
+        "multiple": false,
         "required": false,
         "types": [
           {
-            "type": "qualified_word",
-            "named": true
-          },
-          {
-            "type": "refmod",
-            "named": true
-          },
-          {
-            "type": "subref",
+            "type": "user_defined_word",
             "named": true
           }
         ]
       },
       "length": {
-        "multiple": true,
+        "multiple": false,
         "required": false,
         "types": [
           {
@@ -4083,21 +4035,13 @@
             "named": true
           },
           {
-            "type": "qualified_word",
-            "named": true
-          },
-          {
-            "type": "refmod",
-            "named": true
-          },
-          {
-            "type": "subref",
+            "type": "user_defined_word",
             "named": true
           }
         ]
       },
       "program": {
-        "multiple": true,
+        "multiple": false,
         "required": true,
         "types": [
           {
@@ -4109,19 +4053,11 @@
             "named": true
           },
           {
-            "type": "qualified_word",
-            "named": true
-          },
-          {
-            "type": "refmod",
-            "named": true
-          },
-          {
             "type": "string",
             "named": true
           },
           {
-            "type": "subref",
+            "type": "user_defined_word",
             "named": true
           },
           {
@@ -4683,6 +4619,7 @@
   {
     "type": "copy_statement",
     "named": true,
+    "extra": true,
     "fields": {
       "book": {
         "multiple": false,
@@ -4724,11 +4661,27 @@
       }
     },
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": false,
       "types": [
         {
-          "type": "replacing_clause",
+          "type": "BY",
+          "named": true
+        },
+        {
+          "type": "LEADING",
+          "named": true
+        },
+        {
+          "type": "TRAILING",
+          "named": true
+        },
+        {
+          "type": "WORD",
+          "named": true
+        },
+        {
+          "type": "string",
           "named": true
         }
       ]
@@ -4863,6 +4816,10 @@
           "named": true
         },
         {
+          "type": "level_number_88",
+          "named": true
+        },
+        {
           "type": "n_string",
           "named": true
         },
@@ -4969,7 +4926,7 @@
     "fields": {
       "comment": {
         "multiple": true,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "comment_entry",
@@ -4985,7 +4942,7 @@
     "fields": {
       "comment": {
         "multiple": true,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "comment_entry",
@@ -5870,17 +5827,20 @@
   {
     "type": "exec_statement",
     "named": true,
-    "fields": {
-      "command": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "cics_command",
-            "named": true
-          }
-        ]
-      }
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "cics_command",
+          "named": true
+        },
+        {
+          "type": "exec_text",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -8596,7 +8556,7 @@
     "fields": {
       "comment": {
         "multiple": true,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "comment_entry",
@@ -11020,7 +10980,17 @@
   {
     "type": "picture_9",
     "named": true,
-    "fields": {}
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "p9p_group",
+          "named": true
+        }
+      ]
+    }
   },
   {
     "type": "picture_clause",
@@ -12881,54 +12851,6 @@
     }
   },
   {
-    "type": "replacing_clause",
-    "named": true,
-    "fields": {
-      "by": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "WORD",
-            "named": true
-          },
-          {
-            "type": "string",
-            "named": true
-          }
-        ]
-      },
-      "leading_or_trailing": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "LEADING",
-            "named": true
-          },
-          {
-            "type": "TRAILING",
-            "named": true
-          }
-        ]
-      },
-      "x": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "WORD",
-            "named": true
-          },
-          {
-            "type": "string",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
     "type": "replacing_item",
     "named": true,
     "fields": {
@@ -13581,7 +13503,7 @@
     "fields": {
       "comment": {
         "multiple": true,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "comment_entry",
@@ -16213,6 +16135,11 @@
     }
   },
   {
+    "type": "user_defined_word",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "value_clause",
     "named": true,
     "fields": {
@@ -17138,7 +17065,8 @@
   },
   {
     "type": "comment",
-    "named": true
+    "named": true,
+    "extra": true
   },
   {
     "type": "comment_entry",
@@ -17150,6 +17078,10 @@
   },
   {
     "type": "error",
+    "named": true
+  },
+  {
+    "type": "exec_text",
     "named": true
   },
   {
@@ -17185,6 +17117,10 @@
     "named": true
   },
   {
+    "type": "level_number_88",
+    "named": true
+  },
+  {
     "type": "low-VALUE",
     "named": false
   },
@@ -17211,6 +17147,10 @@
   {
     "type": "null",
     "named": false
+  },
+  {
+    "type": "p9p_group",
+    "named": true
   },
   {
     "type": "picture_a",

@@ -1,0 +1,35 @@
+====================================
+packed decimals with V and COMP-3
+====================================
+       identification division.
+       program-id. a.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 NOPAY.
+          03 NOPAYIN-IND-INC-TAX-YEAR1 PIC S9(4)V COMP-3.
+          03 NOPAYIN-TOT-INC-TAX-YEAR1 PIC S9(5)V99 COMP-3.
+---
+
+(start
+  (program_definition
+    (identification_division
+      (program_name))
+    (data_division
+      (working_storage_section
+        (data_description
+          (level_number)
+          (entry_name))
+        (data_description
+          (level_number)
+          (entry_name)
+          (picture_clause
+            (picture_9))
+          (usage_clause
+            (COMP_3)))
+        (data_description
+          (level_number)
+          (entry_name)
+          (picture_clause
+            (picture_9))
+          (usage_clause
+            (COMP_3)))))))

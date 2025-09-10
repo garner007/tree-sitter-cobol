@@ -51,7 +51,7 @@ CICS XCTL command
             program: (string)
             commarea: (user_defined_word)
             length: (number
-              (integer)))))))
+              (integer))))))))
 
 ================================================================================
 CICS LINK with RESP

@@ -12,6 +12,30 @@ function nonempty(pattern1, pattern2) {
 module.exports = grammar({
   name: 'COBOL',
   word: $ => $._WORD,
+  conflicts: $ => [
+    [$.cancel_statement],
+    [$.ims_rollback_statement],
+    [$.ims_termtask_statement],
+    [$.goto_statement],
+    [$.perform_statement_call_proc, $.perform_statement_loop],
+    [$._call_header],
+    [$._divide_body],
+    [$.inspect_replacing],
+    [$.inspect_tallying],
+    [$.open_arg],
+    [$.sort_key],
+    [$.set_statement],
+    [$.initialize_statement],
+    [$.free_statement],
+    [$.close_statement],
+    [$._use_exception],
+    [$.line_number, $.column_number],
+  ],
+  inline: $ => [
+    $.statement_group,
+    $.end_cluster,
+    $._tail_statement,
+  ],
   externals: $ => [
     $._WHITE_SPACES,
     $._LINE_PREFIX_COMMENT,
@@ -57,7 +81,7 @@ module.exports = grammar({
     ),
 
     identification_division: $ => seq(
-      $._IDENTIFICATION, $._DIVISION, '.',
+      choice($._IDENTIFICATION, $._ID_ABBR), $._DIVISION, '.',
       optional(
         seq($._PROGRAM_ID, '.',
           $.program_name,
@@ -96,27 +120,27 @@ module.exports = grammar({
 
     author_section: $ => seq(
       $._AUTHOR, '.',
-      field('comment', repeat1($.comment_entry)),
+      field('comment', repeat($.comment_entry)),
     ),
 
     installation_section: $ => seq(
       $._INSTALLATION, '.',
-      field('comment', repeat1($.comment_entry)),
+      field('comment', repeat($.comment_entry)),
     ),
 
     date_written_section: $ => seq(
       $._DATE_WRITTEN, '.',
-      field('comment', repeat1($.comment_entry)),
+      field('comment', repeat($.comment_entry)),
     ),
 
     date_compiled_section: $ => seq(
       $._DATE_COMPILED, '.',
-      field('comment', repeat1($.comment_entry)),
+      field('comment', repeat($.comment_entry)),
     ),
 
     security_section: $ => seq(
       $._SECURITY, '.',
-      field('comment', repeat1($.comment_entry)),
+      field('comment', repeat($.comment_entry)),
     ),
 
     function_definition: $ => seq(
@@ -892,9 +916,11 @@ module.exports = grammar({
         $.level_number,
         repeat1($._data_description_clause), optional($._LITERAL)
       ),
-      /*seq(
-        $.level_number_88, $.entry_name
-      ),*/
+      // Level 88 condition-name entries
+      seq(
+        $.level_number_88, $.entry_name,
+        repeat($._data_description_clause)
+      ),
     ),
 
     level_number: $ => /[0-9][0-9]?/,
@@ -948,6 +974,8 @@ module.exports = grammar({
       seq($.qualified_word, $.refmod),
       seq($.qualified_word, $.subref, $.refmod),
     )),
+
+    // (no standalone user_defined_word rule; use inline alias for clarity)
 
     qualified_word: $ => sepBy(
       $.WORD, $._in_of
@@ -1078,11 +1106,18 @@ module.exports = grammar({
 
     picture_n: $ => /([nN](\([0-9]+\))?)+/,
 
+    // Allow both compact and spaced numeric picture forms.
     picture_9: $ => choice(
       $._picture_9_z,
       $._picture_9_v_1,
       $._picture_9_v_2,
+      seq(
+        optional(token(/[sS]/)),
+        repeat1($.p9p_group),
+        optional(seq(token(/[vV]/), repeat($.p9p_group)))
+      )
     ),
+    p9p_group: $ => token(/[pP9](\([0-9]+\))?/),
     _picture_9_z: $ => /[sS]?(9(\([0-9]+\))?)+([zZ](\([0-9]+\))?)+/,
     _picture_9_v_1: $ => /[sS]?([pP9](\([0-9]+\))?)+([vV]([pP9](\([0-9]+\))?)*)?/,
     _picture_9_v_2: $ => /[sS]?[vV]([pP9](\([0-9]+\))?)*/,
@@ -1287,29 +1322,71 @@ module.exports = grammar({
       $.paragraph_header,
     )),
 
-    _procedure_division_statements_before_header: $ => prec(1, seq(
+    // A group of statements terminated by one or more END_* tokens, ending with a period.
+    end_cluster: $ => seq(
+      repeat(choice(
+        $.END_ACCEPT,
+        $.END_ADD,
+        $.END_CALL,
+        $.END_COMPUTE,
+        $.END_DELETE,
+        $.END_DISPLAY,
+        $.END_DIVIDE,
+        $.END_MULTIPLY,
+        $.END_READ,
+        $.END_SEARCH,
+        $.END_SUBTRACT,
+        $.END_WRITE,
+        $.END_PERFORM,
+        $.END_IF,
+        $.END_EVALUATE,
+        $.END_RETURN,
+        $.END_REWRITE,
+        $.END_START,
+        $.END_STRING,
+        $.END_UNSTRING,
+      )),
+      $.period
+    ),
+
+    statement_group: $ => prec(1, seq(
       repeat($._procedure_division_statement),
-      $._end_statement
+      $.end_cluster
     )),
 
+    _procedure_division_statements_before_header: $ => $.statement_group,
+
     _procedure_division_content: $ => prec.right(choice(
+      // Case 1: trailing statements group (with period) and optional statements
       seq(
         optional($._procedure_division_headers),
         repeat(seq(
           $._procedure_division_statements_before_header,
           $._procedure_division_headers,
         )),
-        repeat1($._procedure_division_statement)
+        $._procedure_division_statements_before_header,
+        repeat($._tail_statement)
       ),
+      // Case 2: one or more (statements+period) followed by headers, finishing at a header
       seq(
         optional($._procedure_division_headers),
         repeat1(seq(
           $._procedure_division_statements_before_header,
           $._procedure_division_headers,
-        )),
-        repeat($._procedure_division_statement)
+        ))
       ),
+      // Case 3: trailing simple statements only
+      seq(
+        optional($._procedure_division_headers),
+        repeat(seq(
+          $._procedure_division_statements_before_header,
+          $._procedure_division_headers,
+        )),
+        repeat1($._tail_statement)
+      )
     )),
+
+    _tail_statement: $ => seq($._statement, optional($.period)),
 
     _procedure_division_declaratives_content: $ => prec.right(1, choice(
       $._procedure_division_headers,
@@ -1330,10 +1407,9 @@ module.exports = grammar({
       ),
     )),
 
-    _procedure_division_statement: $ => prec.right(choice(
-      seq($._statement, optional('.')),
+    _procedure_division_statement: $ => prec(2, choice(
+      $._statement,
       $._start_handler,
-      $._end_statement,
     )),
 
     _procedure: $ => choice(
@@ -1478,7 +1554,17 @@ module.exports = grammar({
         choice($.WORD, $.string)))
       ),
       field('supress', optional($.SUPPRESS)),
-      optional($.replacing_clause),
+      // Tolerant REPLACING: accept any WORD/string sequence until period
+      optional(seq(
+        $._REPLACING,
+        repeat1(choice(
+          $.WORD,
+          $.string,
+          $.LEADING,
+          $.TRAILING,
+          $.BY
+        ))
+      )),
       '.'
     ),
 
@@ -2756,16 +2842,21 @@ module.exports = grammar({
     )),
 
     // EXEC statement for embedded SQL/CICS/IMS
-    exec_statement: $ => seq(
+    exec_statement: $ => prec.right(seq(
       $._EXEC,
-      field('type', choice(
-        seq($._SQL, field('body', repeat(choice(/[^\r\n]+/, /\r?\n/)))),
-        seq($._CICS, field('command', $.cics_command)),
-        seq($._DLI, field('body', repeat(choice(/[^\r\n]+/, /\r?\n/)))),
-        seq($._SQLIMS, field('body', repeat(choice(/[^\r\n]+/, /\r?\n/))))
-      )),
-      $._END_EXEC
-    ),
+      choice(
+        seq($._SQL, repeat(choice($.exec_text, /\r?\n/))),
+        seq($._CICS, $.cics_command),
+        seq($._DLI, repeat(choice($.exec_text, /\r?\n/))),
+        seq($._SQLIMS, repeat(choice($.exec_text, /\r?\n/)))
+      ),
+      choice(
+        seq($._END_EXEC, optional('.')),
+        '.' // some dialects terminate EXEC blocks with a period
+      )
+    )),
+
+    exec_text: $ => token(prec(-1, /[^\r\n]+/)),
 
     // CICS command structure
     cics_command: $ => choice(
@@ -2781,26 +2872,24 @@ module.exports = grammar({
       $.cics_handle_command,
       $.cics_syncpoint_command,
       $.cics_asktime_command,
-      // Generic fallback for unstructured CICS commands
-      repeat1(choice(/[^\r\n]+/, /\r?\n/))
     ),
 
     // CICS LINK command
     cics_link_command: $ => seq(
       $._CICS_LINK,
-      seq($._CICS_PROGRAM, '(', field('program', choice($._string, $._identifier)), ')'),
-      optional(seq($._CICS_COMMAREA, '(', field('commarea', $._identifier), ')')),
-      optional(seq($._CICS_LENGTH, '(', field('length', choice($.number, $._identifier)), ')')),
-      optional(seq($._CICS_RESP, '(', field('resp', $._identifier), ')')),
-      optional(seq($._CICS_RESP2, '(', field('resp2', $._identifier), ')'))
+      seq($._CICS_PROGRAM, '(', field('program', choice($._string, alias($.WORD, $.user_defined_word))), ')'),
+      optional(seq($._CICS_COMMAREA, '(', field('commarea', alias($.WORD, $.user_defined_word)), ')')),
+      optional(seq($._CICS_LENGTH, '(', field('length', choice($.number, alias($.WORD, $.user_defined_word))), ')')),
+      optional(seq($._CICS_RESP, '(', field('resp', alias($.WORD, $.user_defined_word)), ')')),
+      optional(seq($._CICS_RESP2, '(', field('resp2', alias($.WORD, $.user_defined_word)), ')'))
     ),
 
     // CICS XCTL command
     cics_xctl_command: $ => seq(
       $._CICS_XCTL,
-      seq($._CICS_PROGRAM, '(', field('program', choice($._string, $._identifier)), ')'),
-      optional(seq($._CICS_COMMAREA, '(', field('commarea', $._identifier), ')')),
-      optional(seq($._CICS_LENGTH, '(', field('length', choice($.number, $._identifier)), ')'))
+      seq($._CICS_PROGRAM, '(', field('program', choice($._string, alias($.WORD, $.user_defined_word))), ')'),
+      optional(seq($._CICS_COMMAREA, '(', field('commarea', alias($.WORD, $.user_defined_word)), ')')),
+      optional(seq($._CICS_LENGTH, '(', field('length', choice($.number, alias($.WORD, $.user_defined_word))), ')'))
     ),
 
     // CICS SEND command
@@ -3352,6 +3441,7 @@ module.exports = grammar({
       'HIGH-values', 'HIGH-Values', 'HIGH-VALUES',
     ),
     _IDENTIFICATION: $ => /[iI][dD][eE][nN][tT][iI][fF][iI][cC][aA][tT][iI][oO][nN]/,
+    _ID_ABBR: $ => /[iI][dD]/,
     _IF: $ => /[iI][fF]/,
     _IGNORE: $ => /[iI][gG][nN][oO][rR][eE]/,
     _IGNORING: $ => /[iI][gG][nN][oO][rR][iI][nN][gG]/,

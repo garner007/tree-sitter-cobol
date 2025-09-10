@@ -1,0 +1,67 @@
+====================================
+STRING and UNSTRING basics
+====================================
+       identification division.
+       program-id. a.
+       data division.
+       working-storage section.
+       77 OUT PIC X(10).
+       77 A   PIC X(3).
+       77 B   PIC X(3).
+       procedure division.
+       STRING A B DELIMITED BY SIZE INTO OUT END-STRING.
+       UNSTRING OUT DELIMITED BY SPACE INTO A B END-UNSTRING.
+---
+
+(start
+  (program_definition
+    (identification_division
+      (program_name))
+    (data_division
+      (working_storage_section
+        (data_description
+          (level_number)
+          (entry_name)
+          (picture_clause
+            (picture_x)))
+        (data_description
+          (level_number)
+          (entry_name)
+          (picture_clause
+            (picture_x)))
+        (data_description
+          (level_number)
+          (entry_name)
+          (picture_clause
+            (picture_x)))))
+    (procedure_division
+      (string_statement
+        (string_item
+          (qualified_word
+            (WORD)))
+        (string_item
+          (qualified_word
+            (WORD)))
+        (string_item
+          (DELIMITED)
+          (SIZE))
+        (qualified_word
+          (WORD)))
+      (END_STRING)
+      (period)
+      (unstring_statement
+        (qualified_word
+          (WORD))
+        (unstring_delimited
+          (unstring_delimited_item
+            (SPACE)))
+        (unstring_into_item
+          (qualified_word
+            (WORD)))
+        (unstring_into_item
+          (qualified_word
+            (WORD)))
+        (unstring_into_item
+          (qualified_word
+            (WORD))))
+      (period))))

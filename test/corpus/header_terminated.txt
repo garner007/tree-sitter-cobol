@@ -1,0 +1,40 @@
+====================================
+header-terminated statements before next header
+====================================
+       identification division.
+       program-id. a.
+       procedure division.
+       para-one.
+           add 1 to a
+           add 2 to a
+       para-two.
+           display a.
+---
+
+(start
+  (program_definition
+    (identification_division
+      (program_name))
+    (procedure_division
+      (paragraph_header
+        name: (area_a_word))
+      (add_statement
+        from: (number
+          (integer))
+        to: (arithmetic_x
+          (qualified_word
+            (WORD))))
+      (add_statement
+        from: (number
+          (integer))
+        to: (arithmetic_x
+          (qualified_word
+            (WORD)))
+        to: (arithmetic_x
+          (qualified_word
+            (WORD))))
+      (period)
+      (display_statement
+        (qualified_word
+          (WORD)))
+      (period))))

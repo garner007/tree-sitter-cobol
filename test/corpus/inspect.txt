@@ -1,0 +1,33 @@
+====================================
+INSPECT basics
+====================================
+       identification division.
+       program-id. a.
+       data division.
+       working-storage section.
+       77 OUT PIC X(10).
+       procedure division.
+       INSPECT OUT TALLYING OUT FOR ALL 'A'.
+---
+
+(start
+  (program_definition
+    (identification_division
+      (program_name))
+    (data_division
+      (working_storage_section
+        (data_description
+          (level_number)
+          (entry_name)
+          (picture_clause
+            (picture_x)))))
+    (procedure_division
+      (inspect_statement
+        (qualified_word
+          (WORD))
+        (inspect_tallying
+          (qualified_word
+            (WORD))
+          (ALL)
+          (string)))
+      (period))))

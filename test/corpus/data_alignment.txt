@@ -1,0 +1,44 @@
+====================================
+record list with interleaved comments
+====================================
+       identification division.
+       program-id. a.
+       data division.
+       file section.
+       fd  SAMPLE.
+       01  SAMPLE-REC.
+           03  FIELD-1         PIC S9(4)V COMP-3.
+      *T.M.
+           03  FIELD-2         PIC S9(5)V99 COMP-3.
+---
+
+(start
+  (program_definition
+    (identification_division
+      (program_name))
+    (data_division
+      (file_section
+        (file_description
+          (file_type
+            (FD))
+          (file_description_entry
+            (WORD))
+          (record_description_list
+            (data_description
+              (level_number)
+              (entry_name))
+            (data_description
+              (level_number)
+              (entry_name)
+              (picture_clause
+                (picture_9))
+              (usage_clause
+                (COMP_3)))
+            (comment)
+            (data_description
+              (level_number)
+              (entry_name)
+              (picture_clause
+                (picture_9))
+              (usage_clause
+                (COMP_3)))))))))

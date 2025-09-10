@@ -1,0 +1,47 @@
+====================================
+level 88 condition names under a field
+====================================
+       identification division.
+       program-id. a.
+       data division.
+       working-storage section.
+       01  REC.
+           03  REC-TYPE               PIC X.
+               88  TYPE-A             VALUE '1'.
+               88  TYPE-B             VALUE '2'.
+               88  TYPE-C             VALUE '3'.
+---
+
+(start
+  (program_definition
+    (identification_division
+      (program_name))
+    (data_division
+      (working_storage_section
+        (data_description
+          (level_number)
+          (entry_name))
+        (data_description
+          (level_number)
+          (entry_name)
+          (picture_clause
+            (picture_x)))
+        (data_description
+          (level_number)
+          (entry_name)
+          (value_clause
+            (value_item
+              (string))))
+        (data_description
+          (level_number)
+          (entry_name)
+          (value_clause
+            (value_item
+              (string))))
+        (data_description
+          (level_number)
+          (entry_name)
+          (value_clause
+            (value_item
+              (string))))))))
+
