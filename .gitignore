@@ -43,3 +43,6 @@ wangold_tree_sitter_cobol/
 
 # IDE settings
 /.idea/
+
+# Local tooling scripts
+/scripts/
