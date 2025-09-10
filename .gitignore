@@ -46,3 +46,6 @@ wangold_tree_sitter_cobol/
 
 # Local tooling scripts
 /scripts/
+
+# Project-local notes
+/TODO.md
