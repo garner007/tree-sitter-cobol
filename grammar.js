@@ -14,6 +14,18 @@ module.exports = grammar({
   word: $ => $._WORD,
   conflicts: $ => [
     [$.cancel_statement],
+    [$.cancel_statement, $._literal],
+    [$.column_number, $._literal],
+    [$.line_number, $._literal],
+    [$.entry_statement],
+    [$.ims_checkpoint_statement],
+    [$.ims_restart_statement],
+    [$.sort_output_giving],
+    [$.sort_input_using],
+    [$._target_x_list],
+    [$._move_body, $._target_x_list],
+    [$._multiply_body],
+    [$._subtract_body],
     [$.ims_rollback_statement],
     [$.ims_termtask_statement],
     [$.goto_statement],
@@ -24,12 +36,19 @@ module.exports = grammar({
     [$.inspect_tallying],
     [$.open_arg],
     [$.sort_key],
+    [$.unstring_statement],
+    [$.disp_attr],
+    [$.invoke_statement],
+    [$.start_key],
     [$.set_statement],
     [$.initialize_statement],
     [$.free_statement],
     [$.close_statement],
     [$._use_exception],
     [$.line_number, $.column_number],
+
+    [$.alter_statement],
+    [$.perform_statement_call_proc],
   ],
   inline: $ => [
     $.statement_group,
@@ -44,6 +63,8 @@ module.exports = grammar({
     $.comment_entry,
     $._multiline_string,
     $.area_a_word,
+    $.HEADER_BREAK,
+    $.STATEMENT_BREAK,
   ],
 
   extras: $ => [
@@ -53,6 +74,9 @@ module.exports = grammar({
     $._LINE_COMMENT,
     $._LINE_COMMENT_ALIAS,
     $.copy_statement,
+    $.SKIP1,
+    $.SKIP2,
+    $.SKIP3,
     $.comment,
   ],
 
@@ -1362,9 +1386,26 @@ module.exports = grammar({
         optional($._procedure_division_headers),
         repeat(seq(
           $._procedure_division_statements_before_header,
-          $._procedure_division_headers,
+          seq(optional($.HEADER_BREAK), $._procedure_division_headers),
         )),
         $._procedure_division_statements_before_header,
+        repeat($._tail_statement)
+      ),
+      // Case 1b: tail statements (period-less) immediately followed by a header.
+      // This specifically covers real-world runs like consecutive MOVE lines
+      // terminated by the next paragraph/section header.
+      seq(
+        optional($._procedure_division_headers),
+        // zero or more (group + header) cycles before the tail run
+        repeat(seq(
+          $._procedure_division_statements_before_header,
+          seq(optional($.HEADER_BREAK), $._procedure_division_headers),
+        )),
+        // one or more tail statements without requiring a period
+        repeat1($._tail_statement),
+        // header begins the next block, prefered with a scanner-emitted break
+        seq(optional($.HEADER_BREAK), $._procedure_division_headers),
+        // allow additional simple tail statements afterwards
         repeat($._tail_statement)
       ),
       // Case 2: one or more (statements+period) followed by headers, finishing at a header
@@ -1372,7 +1413,7 @@ module.exports = grammar({
         optional($._procedure_division_headers),
         repeat1(seq(
           $._procedure_division_statements_before_header,
-          $._procedure_division_headers,
+          seq(optional($.HEADER_BREAK), $._procedure_division_headers),
         ))
       ),
       // Case 3: trailing simple statements only
@@ -1380,7 +1421,7 @@ module.exports = grammar({
         optional($._procedure_division_headers),
         repeat(seq(
           $._procedure_division_statements_before_header,
-          $._procedure_division_headers,
+          seq(optional($.HEADER_BREAK), $._procedure_division_headers),
         )),
         repeat1($._tail_statement)
       )
@@ -1411,6 +1452,8 @@ module.exports = grammar({
       $._statement,
       $._start_handler,
     )),
+
+    
 
     _procedure: $ => choice(
       $.section_header,
@@ -1443,6 +1486,7 @@ module.exports = grammar({
       $.add_statement,
       $.allocate_statement,
       $.alter_statement,
+      $.exit_perform_statement,
       $.call_statement,
       $.cancel_statement,
       $.close_statement,
@@ -1452,6 +1496,7 @@ module.exports = grammar({
       $.display_statement,
       $.divide_statement,
       $.exec_statement,
+      $.entry_statement,
       $.exit_statement,
       $.free_statement,
       $.generate_statement,
@@ -1568,6 +1613,16 @@ module.exports = grammar({
       '.'
     ),
 
+    // ENTRY '...' USING ...
+    entry_statement: $ => seq(
+      $._ENTRY,
+      field('name', choice($.WORD, $.string)),
+      optional(seq($.USING, field('parameters', repeat1($._identifier))))
+    ),
+
+    // Tolerate SKIP1/SKIP2/SKIP3 anywhere
+    skip_statement: $ => choice($.SKIP1, $.SKIP2, $.SKIP3),
+
     replacing_clause: $ => seq(
       field('leading_or_trailing', optional(choice($.LEADING, $.TRAILING))),
       field('x', choice($.WORD, $.string)),
@@ -1643,25 +1698,7 @@ module.exports = grammar({
       )
     )),
 
-    at_line_column: $ => choice(
-      seq(optional($._AT), $.line_number, $.column_number),
-      seq(optional($._AT), $.column_number, $.line_number),
-      seq(optional($._AT), $.column_number),
-      seq(optional($._AT), $.line_number),
-      seq($._AT, $._simple_value)
-    ),
-
-    line_number: $ => seq(
-      $._LINE,
-      optional($._NUMBER),
-      $._id_or_lit,
-    ),
-
-    column_number: $ => seq(
-      choice($._POSITION, $._COLUMN),
-      optional($._NUMBER),
-      $._id_or_lit,
-    ),
+    // at_line_column, line_number, column_number are defined later; use those.
 
     with_accp_attr: $ => seq(
       $._WITH, repeat1(choice(
@@ -1847,11 +1884,11 @@ module.exports = grammar({
       $._OVERFLOW,
     ),
 
-    cancel_statement: $ => seq(
+    cancel_statement: $ => prec(1, seq(
       $._CANCEL,
       field('all', optional($.ALL)),
       repeat($._id_or_lit)
-    ),
+    )),
 
     close_statement: $ => seq(
       $._CLOSE,
@@ -1917,13 +1954,13 @@ module.exports = grammar({
       seq($._AT, field('at', $._simple_value))
     ),
 
-    line_number: $ => seq(
+    line_number: $ => prec(1, seq(
       $._LINE,
       optional($.number),
       $._id_or_lit
-    ),
+    )),
 
-    column_number: $ => choice(
+    column_number: $ => prec(1, choice(
       seq(
         $._COLUMN,
         field('column_x', optional($.number)),
@@ -1934,7 +1971,7 @@ module.exports = grammar({
         field('position_x', optional($.number)),
         field('position_y', $._id_or_lit),
       ),
-    ),
+    )),
 
     _id_or_lit: $ => choice(
       $._identifier,
@@ -2022,15 +2059,19 @@ module.exports = grammar({
 
     when_other: $ => $._WHEN_OTHER,
 
-    exit_statement: $ => prec.left(seq(
+    exit_statement: $ => prec.right(2, seq(
       $._EXIT,
       optional(choice(
         $.PROGRAM,
-        $.PERFORM,
-        seq($.PERFORM, $.CYCLE),
         $.SECTION,
         $.PARAGRAPH
       ))
+    )),
+
+    exit_perform_statement: $ => prec(3, seq(
+      $._EXIT,
+      $.PERFORM,
+      optional($.CYCLE)
     )),
 
     goback_statement: $ => $._GOBACK,
@@ -2330,11 +2371,22 @@ module.exports = grammar({
       $._move_body
     ),
 
-    _move_body: $ => seq(
-      optional($._CORRESPONDING),
-      field('src', $._x),
-      $._TO,
-      field('dst', $._target_x_list)
+    _move_body: $ => choice(
+      // Prefer to terminate a MOVE after the first target when a header starts
+      // at the next line (scanner emits HEADER_BREAK at line start before Area A headers).
+      prec(2, seq(
+        optional($._CORRESPONDING),
+        field('src', $._x),
+        $._TO,
+        field('dst', $._target_x),
+        $.HEADER_BREAK,
+      )),
+      prec(1, seq(
+        optional($._CORRESPONDING),
+        field('src', $._x),
+        $._TO,
+        field('dst', $._target_x_list)
+      )),
     ),
 
     _x: $ => choice(
@@ -2360,7 +2412,17 @@ module.exports = grammar({
       optional($.ROUNDED)
     ),
 
-    _target_x_list: $ => repeat1($._target_x),
+    // Allow external breaks to terminate a lax target list when a new statement
+    // or header starts at the beginning of the next line.
+    _target_x_list: $ => seq(
+      $._target_x,
+      repeat(choice(
+        // Prefer breaks over greedily consuming another target
+        $.HEADER_BREAK,
+        $.STATEMENT_BREAK,
+        $._target_x,
+      )),
+    ),
     _target_x: $ => choice(
       $._identifier,
       seq($._ADDRESS, optional($._OF), $._identifier)
@@ -3882,6 +3944,9 @@ module.exports = grammar({
     END_UNSTRING: $ => $._END_UNSTRING,
     END_WRITE: $ => $._END_WRITE,
     //ENTRY: $ => $._ENTRY,
+    SKIP1: $ => $._SKIP1,
+    SKIP2: $ => $._SKIP2,
+    SKIP3: $ => $._SKIP3,
     ENVIRONMENT: $ => $._ENVIRONMENT,
     //ENVIRONMENT_NAME: $ => $._ENVIRONMENT_NAME,
     ENVIRONMENT_VALUE: $ => $._ENVIRONMENT_VALUE,
@@ -4168,6 +4233,9 @@ module.exports = grammar({
     //USAGE: $ => $._USAGE,
     //USE: $ => $._USE,
     USING: $ => $._USING,
+    _SKIP1: $ => /[sS][kK][iI][pP]1/,
+    _SKIP2: $ => /[sS][kK][iI][pP]2/,
+    _SKIP3: $ => /[sS][kK][iI][pP]3/,
     VALUE: $ => $._VALUE,
     VARYING: $ => $._VARYING,
     WAIT: $ => $._WAIT,
@@ -4212,6 +4280,10 @@ module.exports = grammar({
     AND_EQ: $ => /[aA][nN][dD][ \t]+(=|[eE][qQ][uU][aA][lL]([ \t]+[tT][oO])?)/,
     AND_NE: $ => /[aA][nN][dD][ \t]+(!=|[nN][oO][tT][ \t]+[eE][qQ][uU][aA][lL]([ \t]+[tT][oO])?)/,
     OR_LT: $ => /[oO][rR][ \t]+(<|[lL][eE][sS][sS][ \t]+[tT][hH][aA][nN])/,
+    // Special case: a run of MOVE statements without periods that is
+    // terminated by the next paragraph/section header (preceded by
+    // a scanner-emitted HEADER_BREAK). This helps real-world code where
+    // consecutive MOVE lines omit periods.
     OR_LE: $ => /[oO][rR][ \t]+(<=|[nN][oO][tT][ \t]+(>|[gG][rR][eE][aA][tT][eE][rR][ \t]+[tT][hH][aA][nN]))/,
     OR_GT: $ => /[oO][rR][ \t]+(>|[gG][rR][eE][aA][tT][eE][rR][ \t]+[tT][hH][aA][nN])/,
     OR_GE: $ => /[oO][rR][ \t]+(>=|[nN][oO][tT][ \t]+(<|[lL][eE][sS][sS][ \t]+[tT][hH][aA][nN]))/,

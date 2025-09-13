@@ -906,6 +906,24 @@
     "fields": {}
   },
   {
+    "type": "SKIP1",
+    "named": true,
+    "extra": true,
+    "fields": {}
+  },
+  {
+    "type": "SKIP2",
+    "named": true,
+    "extra": true,
+    "fields": {}
+  },
+  {
+    "type": "SKIP3",
+    "named": true,
+    "extra": true,
+    "fields": {}
+  },
+  {
     "type": "SORT",
     "named": true,
     "fields": {}
@@ -1599,7 +1617,15 @@
             "named": true
           },
           {
+            "type": "entry_statement",
+            "named": true
+          },
+          {
             "type": "exec_statement",
+            "named": true
+          },
+          {
+            "type": "exit_perform_statement",
             "named": true
           },
           {
@@ -1829,7 +1855,15 @@
             "named": true
           },
           {
+            "type": "entry_statement",
+            "named": true
+          },
+          {
             "type": "exec_statement",
+            "named": true
+          },
+          {
+            "type": "exit_perform_statement",
             "named": true
           },
           {
@@ -5743,6 +5777,54 @@
     "fields": {}
   },
   {
+    "type": "entry_statement",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "WORD",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          }
+        ]
+      },
+      "parameters": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "qualified_word",
+            "named": true
+          },
+          {
+            "type": "refmod",
+            "named": true
+          },
+          {
+            "type": "subref",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "USING",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "environment_division",
     "named": true,
     "fields": {},
@@ -5844,23 +5926,34 @@
     }
   },
   {
-    "type": "exit_statement",
+    "type": "exit_perform_statement",
     "named": true,
     "fields": {},
     "children": {
       "multiple": true,
-      "required": false,
+      "required": true,
       "types": [
         {
           "type": "CYCLE",
           "named": true
         },
         {
-          "type": "PARAGRAPH",
-          "named": true
-        },
-        {
           "type": "PERFORM",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "exit_statement",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "PARAGRAPH",
           "named": true
         },
         {
@@ -7036,7 +7129,15 @@
             "named": true
           },
           {
+            "type": "entry_statement",
+            "named": true
+          },
+          {
             "type": "exec_statement",
+            "named": true
+          },
+          {
+            "type": "exit_perform_statement",
             "named": true
           },
           {
@@ -7266,7 +7367,15 @@
             "named": true
           },
           {
+            "type": "entry_statement",
+            "named": true
+          },
+          {
             "type": "exec_statement",
+            "named": true
+          },
+          {
+            "type": "exit_perform_statement",
             "named": true
           },
           {
@@ -9459,6 +9568,14 @@
         "required": true,
         "types": [
           {
+            "type": "HEADER_BREAK",
+            "named": true
+          },
+          {
+            "type": "STATEMENT_BREAK",
+            "named": true
+          },
+          {
             "type": "qualified_word",
             "named": true
           },
@@ -9554,6 +9671,16 @@
           }
         ]
       }
+    },
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "HEADER_BREAK",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -11538,6 +11665,10 @@
           "named": true
         },
         {
+          "type": "entry_statement",
+          "named": true
+        },
+        {
           "type": "eop",
           "named": true
         },
@@ -11547,6 +11678,10 @@
         },
         {
           "type": "exec_statement",
+          "named": true
+        },
+        {
+          "type": "exit_perform_statement",
           "named": true
         },
         {
@@ -11877,6 +12012,10 @@
           "named": true
         },
         {
+          "type": "HEADER_BREAK",
+          "named": true
+        },
+        {
           "type": "accept_statement",
           "named": true
         },
@@ -11937,6 +12076,10 @@
           "named": true
         },
         {
+          "type": "entry_statement",
+          "named": true
+        },
+        {
           "type": "eop",
           "named": true
         },
@@ -11946,6 +12089,10 @@
         },
         {
           "type": "exec_statement",
+          "named": true
+        },
+        {
+          "type": "exit_perform_statement",
           "named": true
         },
         {
@@ -13833,6 +13980,14 @@
         "required": true,
         "types": [
           {
+            "type": "HEADER_BREAK",
+            "named": true
+          },
+          {
+            "type": "STATEMENT_BREAK",
+            "named": true
+          },
+          {
             "type": "qualified_word",
             "named": true
           },
@@ -14007,6 +14162,14 @@
         "required": true,
         "types": [
           {
+            "type": "HEADER_BREAK",
+            "named": true
+          },
+          {
+            "type": "STATEMENT_BREAK",
+            "named": true
+          },
+          {
             "type": "qualified_word",
             "named": true
           },
@@ -14112,6 +14275,14 @@
         "multiple": true,
         "required": true,
         "types": [
+          {
+            "type": "HEADER_BREAK",
+            "named": true
+          },
+          {
+            "type": "STATEMENT_BREAK",
+            "named": true
+          },
           {
             "type": "qualified_word",
             "named": true
@@ -16836,6 +17007,10 @@
     "named": true
   },
   {
+    "type": "HEADER_BREAK",
+    "named": true
+  },
+  {
     "type": "HIGH-VALUE",
     "named": false
   },
@@ -17022,6 +17197,10 @@
   {
     "type": "SPACES",
     "named": false
+  },
+  {
+    "type": "STATEMENT_BREAK",
+    "named": true
   },
   {
     "type": "Space",
